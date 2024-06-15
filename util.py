@@ -324,7 +324,35 @@ def plot_ddpm_2d_result(
             plt.title('Step:[%d]'%(t),fontsize=tfs)
         plt.tight_layout()
         plt.show()
-    
+
+
+def plot_ddpm_2d_result_image(x_data, step_list, x_t_list, n_plot=1, tfs=10):
+    """
+    :param x_data: [N x C x W x H] torch tensor, training data
+    :param step_list: [M] ndarray, diffusion steps to append x_t
+    :param x_t_list: list of [n_sample x C x L] torch tensors
+    """
+    for sample_idx in range(n_plot):
+        plt.figure(figsize=(15, 2))
+        for i_idx, t in enumerate(step_list):
+            x_t = x_t_list[t]  # [n_sample x C x W x H]
+            x_t_np = x_t.detach().cpu().numpy()  # [n_sample x C x W x H]
+
+            # Clip the values to the valid range
+            if x_data.dtype == th.float32 or x_data.dtype == th.float64:
+                x_t_np = np.clip(x_t_np, 0, 1)  # Assuming the valid range is [0, 1]
+            else:
+                x_t_np = np.clip(x_t_np, 0, 255)  # Assuming the valid range is [0, 255]
+
+            plt.subplot(1, len(step_list), i_idx + 1)
+            if x_data.shape[1] == 1:  # gray image
+                plt.imshow(x_t_np[sample_idx, 0, :, :], cmap='gray')
+            else:
+                plt.imshow(x_t_np[sample_idx, :, :, :].transpose(1, 2, 0))
+            plt.axis('off')
+            plt.title('Step:[%d]' % t, fontsize=tfs)
+        plt.tight_layout()
+        plt.show()
     
 def get_hbm_M(times,hyp_gain=1.0,hyp_len=0.1,device='cpu'):
     """ 
