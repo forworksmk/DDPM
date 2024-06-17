@@ -325,6 +325,35 @@ def plot_ddpm_2d_result(
         plt.tight_layout()
         plt.show()
 
+def plot_ddpm_2d_result_download(x_data, step_list, x_t_list, n_plot=1, tfs=10, save_path=None):
+    """
+    :param x_data: [N x C x W x H] torch tensor, training data
+    :param step_list: [M] ndarray, diffusion steps to append x_t
+    :param x_t_list: list of [n_sample x C x L] torch tensors
+    :param n_plot: number of samples to plot (default is 1)
+    :param tfs: title font size (default is 10)
+    :param save_path: path to save the figure (optional)
+    """
+    for sample_idx in range(n_plot):
+        plt.figure(figsize=(15, 2))
+        for i_idx, t in enumerate(step_list):
+            x_t = x_t_list[t]  # [n_sample x C x W x H]
+            x_t_np = x_t.detach().cpu().numpy()  # [n_sample x C x W x H]
+            plt.subplot(1, len(step_list), i_idx + 1)
+            if x_data.shape[1] == 1:  # gray image
+                plt.imshow(x_t_np[sample_idx, 0, :, :], cmap='gray')
+            else:
+                plt.imshow(x_t_np[sample_idx, :, :, :].transpose(1, 2, 0))
+            plt.axis('off')
+            plt.title('Step:[%d]' % (t), fontsize=tfs)
+        
+        plt.tight_layout()
+        
+        # Save the figure if save_path is provided
+        if save_path is not None:
+            plt.savefig(save_path.format(sample_idx), bbox_inches='tight')
+        
+        plt.show()
 
 def plot_ddpm_2d_result_image(x_data, step_list, x_t_list, n_plot=1, tfs=10):
     """
